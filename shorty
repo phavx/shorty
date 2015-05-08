@@ -1,0 +1,22 @@
+#!/bin/zsh
+
+DIR=${HOME}/short
+LNK=${1}
+TMP=$(mktemp -u XXXXX)
+TITLE=$(wget -qO- ${LNK} |
+  gawk -v IGNORECASE=1 -v RS='</title' 'RT{gsub(/.*<title[^>]*>/,"");print;exit}')
+
+while [[ -e "${DIR}/${TMP}" ]] ; do TMP=$(mktemp -u XXXXX); done
+
+mkdir -p "${DIR}/${TMP}"
+cat <<-HTMLSTRUCT > "${DIR}/${TMP}/index.html"
+		<!DOCTYPE html>
+		<html lang="en-us">
+		<head><title>${TITLE}</title>
+		<meta http-equiv="REFRESH" content="3;url=${LNK}"></HEAD>
+		<body>
+		<p>trying to redirect you to: <a href="${LNK}">${TITLE} (${LNK})</a></p>
+		<p>saved at: $(date)</p>
+		</body>
+		</html>
+HTMLSTRUCT
